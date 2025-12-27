@@ -18,11 +18,11 @@ class ProdiController extends Controller
 
         $keyword = $request->input('cari');
 
-      
+        
         $query_baru = \App\Models\DisposisiSurat::with('surat')
             ->whereHas('surat') 
             ->where('prodi_id', $prodi_db->id)
-            ->where('status', 'pending');
+            ->where('status', 'pending'); 
 
         if ($keyword) {
             $query_baru->whereHas('surat', function($q) use ($keyword) {
@@ -34,7 +34,7 @@ class ProdiController extends Controller
         $surat_baru = $query_baru->orderBy('updated_at', 'desc')->get();
 
 
-        // --- QUERY 2: RIWAYAT ---
+       
         $query_selesai = \App\Models\DisposisiSurat::with('surat')
             ->whereHas('surat') 
             ->where('prodi_id', $prodi_db->id)
@@ -43,8 +43,7 @@ class ProdiController extends Controller
         if ($keyword) {
             $query_selesai->whereHas('surat', function($q) use ($keyword) {
                 $q->where('nama_pengirim', 'LIKE', "%$keyword%")
-                  ->orWhere('perihal_surat', 'LIKE', "%$keyword%")
-                  ->orWhere('kode_tiket', 'LIKE', "%$keyword%");
+                  ->orWhere('perihal_surat', 'LIKE', "%$keyword%");
             });
         }
         $surat_selesai = $query_selesai->orderBy('updated_at', 'desc')->get();

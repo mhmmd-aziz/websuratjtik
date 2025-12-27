@@ -15,10 +15,10 @@
             color: white;
         }
         .card-track {
-            background: rgba(255, 255, 255, 0.95);
+            background: rgba(255, 255, 255, 0.98);
             border-radius: 15px;
             color: #333;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+            box-shadow: 0 10px 40px rgba(0,0,0,0.5);
         }
         
         /* Timeline CSS */
@@ -26,61 +26,68 @@
             display: flex;
             justify-content: center;
             flex-wrap: wrap;
-            margin-top: 20px;
+            margin-top: 30px;
+            margin-bottom: 20px;
         }
         .timeline-step {
             align-items: center;
             display: flex;
             flex-direction: column;
             position: relative;
-            margin: 0 15px;
-        }
-        .timeline-content {
+            margin: 0 10px;
             width: 100px;
-            text-align: center;
         }
         .timeline-step .inner-circle {
             border-radius: 50%;
-            height: 50px;
-            width: 50px;
+            height: 55px;
+            width: 55px;
             display: flex;
             align-items: center;
             justify-content: center;
-            background-color: #e9ecef;
-            border: 3px solid #dee2e6;
+            background-color: #f8f9fa;
+            border: 4px solid #e9ecef;
             z-index: 10;
-            font-size: 20px;
-            color: #6c757d;
-            transition: 0.3s;
+            font-size: 22px;
+            color: #adb5bd;
+            transition: 0.4s ease;
         }
         /* Garis penghubung */
         .timeline-step:not(:last-child):after {
             content: "";
             position: absolute;
-            height: 3px;
+            height: 4px;
             width: 100%;
-            top: 25px;
+            top: 26px;
             left: 50%;
-            background-color: #dee2e6;
+            background-color: #e9ecef;
             z-index: 0;
+            transition: 0.4s ease;
         }
-        /* Warna Aktif */
+        
+        /* STATE: ACTIVE (Sedang diproses disini) */
         .timeline-step.active .inner-circle {
-            background-color: #bf00ff;
+            background-color: white;
             border-color: #bf00ff;
-            color: white;
-            box-shadow: 0 0 15px rgba(191, 0, 255, 0.4);
+            color: #bf00ff;
+            box-shadow: 0 0 0 5px rgba(191, 0, 255, 0.2);
+            transform: scale(1.1);
         }
-        .timeline-step.active:after {
-            background-color: #bf00ff;
+        .timeline-step.active p {
+            color: #bf00ff !important;
+            font-weight: 800 !important;
         }
+
+        /* STATE: COMPLETED (Sudah lewat) */
         .timeline-step.completed .inner-circle {
-            background-color: #28a745;
-            border-color: #28a745;
+            background-color: #198754;
+            border-color: #198754;
             color: white;
         }
         .timeline-step.completed:after {
-            background-color: #28a745;
+            background-color: #198754;
+        }
+        .timeline-step.completed p {
+            color: #198754 !important;
         }
     </style>
 </head>
@@ -97,143 +104,158 @@
 
     <div class="container d-flex flex-column align-items-center justify-content-center flex-grow-1 mt-5 mb-5">
         
-        <div class="card card-track p-5 w-100" style="max-width: 800px;">
-            <h2 class="text-center fw-bold mb-4">Lacak Status Surat</h2>
+        <div class="card card-track p-4 p-md-5 w-100" style="max-width: 850px;">
+            <h3 class="text-center fw-bold mb-4">Lacak Status Surat</h3>
             
             <form method="POST" action="{{ route('surat.track') }}" class="mb-5">
                 @csrf
-                <div class="input-group input-group-lg">
-                    <input type="text" name="kode_tiket" class="form-control" 
-                           placeholder="Masukkan Kode Unik (Contoh: X8Y29A)" 
+                <div class="input-group input-group-lg shadow-sm rounded-pill overflow-hidden">
+                    <input type="text" name="kode_tiket" class="form-control border-0 ps-4" 
+                           placeholder="Masukkan Kode Tiket (Contoh: X8Y29A)" 
                            required value="{{ $surat_data->kode_tiket ?? '' }}" 
-                           style="text-transform: uppercase;"> 
+                           style="text-transform: uppercase; font-weight: 600; letter-spacing: 1px;"> 
 
-                    <button class="btn btn-primary" style="background-color: #bf00ff; border:none;" type="submit">Lacak</button>
+                    <button class="btn btn-primary px-4 fw-bold" style="background-color: #bf00ff; border:none;" type="submit">
+                        <i class="bi bi-search me-1"></i> LACAK
+                    </button>
                 </div>
             </form>
 
             @if(session('status_message'))
-                <div class="alert alert-danger text-center">
+                <div class="alert alert-danger text-center rounded-4 border-0 shadow-sm">
                     {!! session('status_message')['text'] !!}
                 </div>
             @endif
 
             @if($surat_data)
                 
-                <div class="bg-light p-3 rounded mb-4 border">
-                    <div class="row">
-                        <div class="col-md-6">
-                            <small class="text-muted">Pengirim:</small>
-                            <h5 class="fw-bold">{{ $surat_data->nama_pengirim }}</h5>
-                        </div>
-                        <div class="col-md-6 text-md-end">
-                            <small class="text-muted">Perihal:</small>
-                            <h5 class="fw-bold">{{ $surat_data->perihal_surat }}</h5>
-                        </div>
-                    </div>
-                </div>
-
                 @php
-                    $status = $surat_data->status;
-                    $step1 = 'completed'; 
-                    $step2 = ($status == 'terkirim' || $status == 'disposisi' || $status == 'arsip') ? 'completed' : '';
-                    $step3 = ($status == 'disposisi' || $status == 'arsip') ? 'completed' : '';
-                    $step4 = ($status == 'arsip') ? 'completed' : '';
+                    $list_disposisi = $surat_data->disposisi;
+                    $total_unit     = $list_disposisi->count();
+                    $total_selesai  = $list_disposisi->where('status', 'arsip')->count();
                     
-                    if($status == 'pending') $step1 = 'active';
-                    if($status == 'terkirim') $step2 = 'active';
-                    if($status == 'disposisi') $step3 = 'active';
-                    if($status == 'arsip') $step4 = 'active';
+                    // Default Status Visual
+                    $visual_step = 1; // 1=Dikirim, 2=Admin JTIK, 3=Prodi, 4=Selesai
+                    $text_status = "Pending";
+                    $class_badge = "bg-secondary";
+
+                    if($surat_data->status == 'pending'){
+                        $visual_step = 2; // Sedang di Admin JTIK
+                        $text_status = "Menunggu Tindakan Admin JTIK";
+                        $class_badge = "bg-secondary";
+                    } 
+                    elseif($surat_data->status == 'terkirim' || $surat_data->status == 'disposisi'){
+                        if($total_unit > 0 && $total_unit == $total_selesai){
+                            // JIKA SEMUA UNIT SUDAH ARSIP -> MAKA GLOBAL SELESAI
+                            $visual_step = 4; 
+                            $text_status = "SELESAI (Semua Unit Telah Mengarsipkan)";
+                            $class_badge = "bg-success";
+                        } else {
+                            // JIKA MASIH ADA YG BELUM
+                            $visual_step = 3;
+                            $text_status = "Sedang Diproses di Unit/Prodi";
+                            $class_badge = "bg-primary";
+                        }
+                    } 
+                    elseif($surat_data->status == 'arsip'){
+                        // Kalau Admin JTIK manual arsip
+                        $visual_step = 4;
+                        $text_status = "Diarsipkan oleh JTIK";
+                        $class_badge = "bg-success";
+                    }
                 @endphp
 
                 <div class="timeline-steps">
-                    <div class="timeline-step {{ $step1 }}">
-                        <div class="inner-circle"><i class="bi bi-send"></i></div>
-                        <p class="mt-2 fw-bold small text-muted">Terkirim</p>
+                    <div class="timeline-step completed">
+                        <div class="inner-circle"><i class="bi bi-send-check"></i></div>
+                        <p class="mt-2 fw-bold small text-muted text-center">Terkirim</p>
                     </div>
-                    <div class="timeline-step {{ $step2 }}">
-                        <div class="inner-circle"><i class="bi bi-building-check"></i></div>
-                        <p class="mt-2 fw-bold small text-muted">Admin JTIK</p>
+
+                    <div class="timeline-step {{ $visual_step >= 2 ? 'completed' : ($visual_step == 1 ? 'active' : '') }}">
+                        <div class="inner-circle"><i class="bi bi-person-gear"></i></div>
+                        <p class="mt-2 fw-bold small text-muted text-center">Admin JTIK</p>
                     </div>
-                    <div class="timeline-step {{ $step3 }}">
-                        <div class="inner-circle"><i class="bi bi-people"></i></div>
-                        <p class="mt-2 fw-bold small text-muted">Diterima Prodi</p>
+
+                    <div class="timeline-step {{ $visual_step >= 3 ? 'completed' : ($visual_step == 2 ? 'active' : '') }}">
+                        <div class="inner-circle"><i class="bi bi-diagram-3"></i></div>
+                        <p class="mt-2 fw-bold small text-muted text-center">Admin Prodi</p>
                     </div>
-                    <div class="timeline-step {{ $step4 }}">
-                        <div class="inner-circle"><i class="bi bi-archive-fill"></i></div>
-                        <p class="mt-2 fw-bold small text-muted">Selesai/Arsip</p>
+
+                    <div class="timeline-step {{ $visual_step == 4 ? 'completed' : '' }}">
+                        <div class="inner-circle"><i class="bi bi-check-circle-fill"></i></div>
+                        <p class="mt-2 fw-bold small text-muted text-center">Selesai</p>
                     </div>
                 </div>
 
-                <div class="text-center mt-4">
-                    <span class="badge bg-dark fs-6 px-4 py-2">Status Saat Ini: {{ strtoupper($status) }}</span>
+                <div class="text-center mt-2 mb-4">
+                    <span class="badge {{ $class_badge }} fs-6 px-4 py-2 rounded-pill shadow-sm">
+                        {{ strtoupper($text_status) }}
+                    </span>
                 </div>
 
-                <div class="mt-4 p-4 bg-white rounded border shadow-sm text-start">
-                    <h5 class="fw-bold mb-3 border-bottom pb-2">📋 Detail Penelusuran</h5>
-                    <div class="row">
-                        <div class="col-12 mb-3 text-center">
-                            <small class="text-muted">KODE TIKET:</small>
-                            <h1 class="fw-bold text-primary" style="letter-spacing: 5px;">
-                                {{ $surat_data->kode_tiket }}
-                            </h1>
-                        </div>
-
-                        <div class="col-md-6 mb-3">
-                            <label class="text-muted small">Status Terkini (Global):</label>
+                <div class="bg-white p-4 rounded-4 border shadow-sm">
+                    <h5 class="fw-bold mb-4 text-primary"><i class="bi bi-card-heading me-2"></i>Detail Surat</h5>
+                    
+                    <div class="row g-4">
+                        <div class="col-md-6 border-end">
+                            <div class="mb-3">
+                                <label class="text-muted small fw-bold">PENGIRIM</label>
+                                <div class="fs-5 fw-bold text-dark">{{ $surat_data->nama_pengirim }}</div>
+                            </div>
+                            <div class="mb-3">
+                                <label class="text-muted small fw-bold">PERIHAL</label>
+                                <div class="fs-6 text-dark">{{ $surat_data->perihal_surat }}</div>
+                            </div>
                             <div>
-                                @if($surat_data->status == 'arsip')
-                                    <span class="badge bg-success fs-6">✅ Selesai / Diarsipkan</span>
-                                @elseif($surat_data->status == 'disposisi')
-                                    <span class="badge bg-warning text-dark fs-6">⚠️ Disposisi (Tindak Lanjut)</span>
-                                @elseif($surat_data->status == 'terkirim')
-                                    <span class="badge bg-primary fs-6">✈️ Sedang di Prodi</span>
-                                @else
-                                    <span class="badge bg-secondary fs-6">⏳ Pending (Di Admin JTIK)</span>
-                                @endif
+                                <label class="text-muted small fw-bold">KODE TIKET</label>
+                                <div class="fs-4 fw-bold text-primary font-monospace">{{ $surat_data->kode_tiket }}</div>
                             </div>
                         </div>
-                        
-                        <div class="col-md-6 mb-3">
-                            <label class="text-muted small fw-bold text-uppercase mb-2">Posisi & Status Per Unit:</label>
-                            <div class="card bg-light border-0">
-                                <ul class="list-group list-group-flush bg-transparent">
-                                    @if($surat_data->disposisi->count() > 0)
-                                        @foreach($surat_data->disposisi as $d)
-                                            <li class="list-group-item bg-transparent d-flex justify-content-between align-items-center px-3 py-2">
-                                                <span class="fw-bold text-dark">
-                                                    <i class="bi bi-building me-1 text-secondary"></i> 
-                                                    Prodi {{ $d->prodi->nama ?? '-' }}
+
+                        <div class="col-md-6 ps-md-4">
+                            <label class="text-muted small fw-bold mb-2">STATUS PER UNIT TUJUAN:</label>
+                            
+                            @if($list_disposisi->count() > 0)
+                                <div class="d-flex flex-column gap-2">
+                                    @foreach($list_disposisi as $d)
+                                        <div class="d-flex justify-content-between align-items-center p-2 rounded border bg-light">
+                                            <div class="d-flex align-items-center">
+                                                <div class="bg-white p-2 rounded-circle shadow-sm me-2">
+                                                    <i class="bi bi-building text-secondary"></i>
+                                                </div>
+                                                <span class="fw-bold text-dark">Prodi {{ $d->prodi->nama }}</span>
+                                            </div>
+
+                                            @if($d->status == 'arsip')
+                                                <span class="badge bg-success rounded-pill px-3">
+                                                    <i class="bi bi-check-all me-1"></i> Selesai
                                                 </span>
-                                                
-                                                @if($d->status == 'arsip')
-                                                    <span class="badge bg-success rounded-pill">
-                                                        <i class="bi bi-check-circle-fill me-1"></i> Selesai
-                                                    </span>
-                                                @elseif($d->status == 'disposisi')
-                                                    <span class="badge bg-warning text-dark rounded-pill">
-                                                        <i class="bi bi-exclamation-circle-fill me-1"></i> Disposisi
-                                                    </span>
-                                                @else
-                                                    <span class="badge bg-secondary rounded-pill">
-                                                        <i class="bi bi-hourglass-split me-1"></i> Pending
-                                                    </span>
-                                                @endif
-                                            </li>
-                                        @endforeach
-                                    @else
-                                        <li class="list-group-item bg-transparent text-center text-muted py-3">
-                                            <small>Surat masih di Admin JTIK (Belum diteruskan)</small>
-                                        </li>
-                                    @endif
-                                </ul>
+                                            @elseif($d->status == 'disposisi')
+                                                <span class="badge bg-warning text-dark rounded-pill px-3">
+                                                    <i class="bi bi-gear-wide-connected me-1"></i> Diproses
+                                                </span>
+                                            @else
+                                                <span class="badge bg-secondary rounded-pill px-3">
+                                                    <i class="bi bi-clock me-1"></i> Pending
+                                                </span>
+                                            @endif
+                                        </div>
+                                    @endforeach
+                                </div>
+                            @else
+                                <div class="alert alert-secondary d-flex align-items-center" role="alert">
+                                    <i class="bi bi-info-circle-fill me-2"></i>
+                                    <div>Surat belum diteruskan ke prodi manapun.</div>
+                                </div>
+                            @endif
+
+                            <div class="mt-4 pt-3 border-top">
+                                <label class="text-muted small fw-bold">UPDATE TERAKHIR</label>
+                                <div class="fw-bold text-secondary">
+                                    <i class="bi bi-calendar-check me-1"></i> 
+                                    {{ $surat_data->updated_at->format('d F Y, H:i') }} WIB
+                                </div>
                             </div>
-                        </div>
-                        <div class="col-md-6">
-                            <label class="text-muted small">Terakhir Diupdate:</label>
-                            <p class="fw-bold font-monospace">
-                                <i class="bi bi-clock-history"></i> {{ $surat_data->updated_at->format('d F Y, H:i') }} WIB
-                            </p>
                         </div>
                     </div>
                 </div>

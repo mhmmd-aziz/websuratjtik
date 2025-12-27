@@ -2,7 +2,6 @@
 
 @section('content')
 <style>
-    /* Styling Tambahan Khusus Halaman Ini */
     body { background-color: #f8f9fa; font-family: 'Segoe UI', sans-serif; }
     .card-modern { border: none; border-radius: 12px; box-shadow: 0 5px 15px rgba(0,0,0,0.05); }
     .table-modern thead th { background: #343a40; color: white; border: none; padding: 12px; }
@@ -135,9 +134,21 @@
                         <tr>
                             <td>{{ $item->surat->nama_pengirim ?? '-' }}</td>
                             <td>{{ $item->surat->perihal_surat ?? '-' }}</td>
-                            <td>
-                                @if($item->status == 'arsip') <span class="badge bg-success rounded-pill px-3">✅ ARSIP</span>
-                                @else <span class="badge bg-warning text-dark rounded-pill px-3">⚠️ DISPOSISI</span>
+                            <td class="text-center">
+                                @if($item->status == 'arsip')
+                                    <span class="badge bg-success rounded-pill px-3">✅ ARSIP (SELESAI)</span>
+                                @else
+                                    <div class="d-flex flex-column align-items-center gap-2">
+                                        <span class="badge bg-warning text-dark rounded-pill px-3">⚠️ SEDANG PROSES</span>
+                                        <form action="{{ route('prodi.surat.update', $item->id) }}" method="POST">
+                                            @csrf
+                                            <input type="hidden" name="aksi" value="arsip">
+                                            <input type="hidden" name="catatan" value="{{ $item->catatan }}">
+                                            <button type="submit" class="btn btn-outline-success btn-sm rounded-pill" style="font-size: 0.75rem;">
+                                                <i class="bi bi-check-circle-fill me-1"></i> Tandai Selesai
+                                            </button>
+                                        </form>
+                                    </div>
                                 @endif
                             </td>
                             <td>
@@ -164,7 +175,6 @@
 
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 <script>
-    // Notifikasi Sukses
     @if(session('success'))
         Swal.fire({
             icon: 'success',
@@ -175,17 +185,10 @@
             confirmButtonColor: '#0d6efd'
         });
     @endif
-
-    // Notifikasi Error
     @if(session('error'))
-        Swal.fire({
-            icon: 'error',
-            title: 'Gagal!',
-            text: "{{ session('error') }}",
-        });
+        Swal.fire({ icon: 'error', title: 'Gagal!', text: "{{ session('error') }}" });
     @endif
 
-    // FUNGSI KONFIRMASI ARSIP
     function konfirmasiArsip(id) {
         Swal.fire({
             title: 'Yakin mau Arsip?',
