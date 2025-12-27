@@ -3,8 +3,8 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
-use App\Models\Surat; // Pastikan Anda menggunakan Model Surat yang benar
-// use Illuminate\Support\Facades\DB; // Tidak diperlukan jika menggunakan Eloquent
+use App\Models\Surat; 
+
 
 class LacakSuratController extends Controller
 {
@@ -14,16 +14,16 @@ class LacakSuratController extends Controller
      */
     public function index()
     {
-        // PERBAIKAN: Menggunakan path view lengkap (folder.subfolder.namafile)
+        
         return view('esurat.surat.lacak_surat', [
             'surat_data' => null,
-            // Ambil pesan status dari sesi (misalnya dari SuratController saat redirect)
+           
             'status_message' => session('status_message', null) 
         ]);
     }
 
     /**
-     * Memproses permintaan POST untuk melacak surat berdasarkan ID.
+     
      * @param \Illuminate\Http\Request $request
      * @return \Illuminate\View\View
      */
@@ -33,7 +33,7 @@ class LacakSuratController extends Controller
             'kode_tiket' => 'required'
         ]);
 
-        // Tambahkan with(['disposisi.prodi']) biar datanya lengkap
+      
         $surat = Surat::with(['disposisi.prodi'])
                       ->where('kode_tiket', $request->kode_tiket)
                       ->first();

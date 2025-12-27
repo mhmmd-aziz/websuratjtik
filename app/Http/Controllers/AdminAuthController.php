@@ -20,7 +20,7 @@ class AdminAuthController extends Controller
         'password' => 'required|string',
     ]);
 
-    // Cari admin berdasarkan USERNAME
+   
     $admin = Admin::where('username', $request->username)->first();
 
     if (!$admin) {
@@ -38,12 +38,12 @@ class AdminAuthController extends Controller
         'admin_name' => $admin->nama,
     ]);
 
-    // --- LOGIKA PEMISAH (REDIRECT) ---
+   
     if ($admin->role == 'admin_jtik') {
-        // Kalau Bos JTIK, ke Dashboard Pusat
+       
         return redirect()->route('admin.jtik.index');
     } else {
-        // Kalau Admin Prodi (TI, TRKJ, TRMM), ke Dashboard Prodi
+       
         return redirect()->route('admin.prodi.index');
     }
 }

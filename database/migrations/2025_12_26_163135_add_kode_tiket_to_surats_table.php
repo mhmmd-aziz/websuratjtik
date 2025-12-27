@@ -16,7 +16,7 @@ return new class extends Migration
         $table->string('kode_tiket', 10)->after('id')->nullable();
     });
 
-    // 2. Isi kode unik untuk data yang SUDAH ADA (biar gak error unique)
+   
     $surats = \DB::table('surats')->get();
     foreach ($surats as $s) {
         \DB::table('surats')->where('id', $s->id)->update([
@@ -24,7 +24,7 @@ return new class extends Migration
         ]);
     }
 
-    // 3. Ubah jadi Unique dan Tidak Boleh Null
+    
     Schema::table('surats', function (Blueprint $table) {
         $table->string('kode_tiket', 10)->nullable(false)->unique()->change();
     });

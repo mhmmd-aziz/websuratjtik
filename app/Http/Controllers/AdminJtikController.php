@@ -6,7 +6,7 @@ use Illuminate\Http\Request;
 use App\Models\Surat; 
 use App\Models\Prodi;
 use App\Models\DisposisiSurat;
-use Illuminate\Support\Facades\Storage; // <--- PENTING!
+use Illuminate\Support\Facades\Storage; 
 
 class AdminJTIKController extends Controller
 {
@@ -16,9 +16,7 @@ class AdminJTIKController extends Controller
         
         $query = Surat::whereIn('status', ['pending', 'terkirim']); 
 
-        // ----------------------------------
-
-        // Logika Pencarian
+      
         if ($request->has('cari') && $request->cari != '') {
             $keyword = $request->cari;
             $query->where(function($q) use ($keyword) {
@@ -29,17 +27,17 @@ class AdminJTIKController extends Controller
             });
         }
 
-        // Ambil data + Data Disposisi (Wajib pakai with untuk monitoring)
+       
         $surat = $query->with(['disposisi.prodi'])
                        ->orderBy('created_at', 'desc')
                        ->get();
 
-        // Data Pendukung
+       
         $prodi = Prodi::all();
         $stats = [
             'pending'   => Surat::where('status', 'pending')->count(),
             'diproses'  => Surat::where('status', 'terkirim')->count(),
-            'selesai'   => Surat::whereIn('status', ['disposisi', 'arsip'])->count(), // Ini hitungan kasar global
+            'selesai'   => Surat::whereIn('status', ['disposisi', 'arsip'])->count(),
             'total'     => Surat::count(),
         ];
 
@@ -62,9 +60,7 @@ class AdminJTIKController extends Controller
         return back()->with('success', 'Surat berhasil diteruskan ke Prodi!');
     }
 
-    // --- FITUR HAPUS & SAMPAH ---
-
-    // 1. Hapus Sementara (Soft Delete)
+  
     public function destroy($id)
     {
         $surat = Surat::findOrFail($id);
@@ -72,14 +68,14 @@ class AdminJTIKController extends Controller
         return back()->with('success', 'Surat dipindahkan ke Tong Sampah.');
     }
 
-    // 2. Halaman Sampah
+    
     public function sampah()
     {
         $sampah = Surat::onlyTrashed()->orderBy('deleted_at', 'desc')->get();
         return view('admin.jtik.sampah', compact('sampah'));
     }
 
-    // 3. Restore
+    
     public function restore($id)
     {
         $surat = Surat::withTrashed()->findOrFail($id);
@@ -88,12 +84,12 @@ class AdminJTIKController extends Controller
             ->with('success', 'Surat berhasil dikembalikan (Restore).');
     }
 
-    // 4. Hapus Permanen
+   
     public function forceDelete($id)
     {
         $surat = Surat::withTrashed()->findOrFail($id);
 
-        // Hapus File Fisik
+       
         if ($surat->file_surat && Storage::disk('public')->exists($surat->file_surat)) {
             Storage::disk('public')->delete($surat->file_surat);
         }
@@ -106,16 +102,14 @@ class AdminJTIKController extends Controller
 
     public function batalKirim($id_disposisi)
     {
-        // 1. Cari data disposisi berdasarkan ID-nya
+        
         $disposisi = DisposisiSurat::findOrFail($id_disposisi);
-        $surat_id = $disposisi->surat_id; // Simpan ID surat induk buat pengecekan nanti
+        $surat_id = $disposisi->surat_id; 
 
         // 2. Hapus (Cabut)
         $disposisi->delete();
 
-        // 3. Cek Logika Status Induk
-        // Jika setelah dihapus ternyata surat ini TIDAK ADA lagi yang pegang (kosong),
-        // kembalikan status surat induk jadi 'pending' (biar admin sadar surat ini nganggur).
+       
         $sisa = DisposisiSurat::where('surat_id', $surat_id)->count();
         if ($sisa == 0) {
             Surat::where('id', $surat_id)->update(['status' => 'pending']);
@@ -129,8 +123,7 @@ class AdminJTIKController extends Controller
     {
         $filename = "Rekap_Surat_JTIK_" . date('Y-m-d_H-i') . ".csv";
         
-        // Ambil semua surat (termasuk yang di tong sampah kalau mau, tapi biasanya yang aktif saja)
-        // Kita ambil yang aktif saja (pending, terkirim, disposisi, arsip)
+       
         $surats = Surat::with(['disposisi.prodi'])
                     ->orderBy('created_at', 'desc')
                     ->get();
@@ -147,15 +140,15 @@ class AdminJTIKController extends Controller
 
         $callback = function() use ($surats, $columns) {
             $file = fopen('php://output', 'w');
-            fputcsv($file, $columns); // Tulis Header Kolom
+            fputcsv($file, $columns); 
 
             foreach ($surats as $k => $s) {
                 
-                // Susun Status Tracking (Contoh: "TI: Arsip, TRKJ: Pending")
+                
                 $tracking_info = [];
                 if($s->disposisi->count() > 0){
                     foreach($s->disposisi as $d){
-                        // Format: NAMA_PRODI (STATUS)
+                        
                         $tracking_info[] = $d->prodi->nama . " (" . strtoupper($d->status) . ")";
                     }
                     $status_detail = implode(' | ', $tracking_info);
@@ -163,7 +156,7 @@ class AdminJTIKController extends Controller
                     $status_detail = "Belum Diteruskan (Di Admin JTIK)";
                 }
 
-                // Tulis Baris Data
+                
                 fputcsv($file, [
                     $k + 1,
                     $s->kode_tiket,
@@ -172,7 +165,7 @@ class AdminJTIKController extends Controller
                     $s->perihal_surat,
                     strtoupper($s->sifat_surat),
                     $s->created_at->format('d-m-Y H:i'),
-                    $status_detail // Kolom paling penting buat laporan
+                    $status_detail 
                 ]);
             }
 

@@ -18,9 +18,9 @@ class ProdiController extends Controller
 
         $keyword = $request->input('cari');
 
-        // --- QUERY 1: SURAT BARU ---
+      
         $query_baru = \App\Models\DisposisiSurat::with('surat')
-            ->whereHas('surat') // <--- TAMBAHAN PENTING (Filter Surat yg belum dihapus)
+            ->whereHas('surat') 
             ->where('prodi_id', $prodi_db->id)
             ->where('status', 'pending');
 
@@ -36,7 +36,7 @@ class ProdiController extends Controller
 
         // --- QUERY 2: RIWAYAT ---
         $query_selesai = \App\Models\DisposisiSurat::with('surat')
-            ->whereHas('surat') // <--- TAMBAHAN PENTING
+            ->whereHas('surat') 
             ->where('prodi_id', $prodi_db->id)
             ->whereIn('status', ['disposisi', 'arsip']);
 

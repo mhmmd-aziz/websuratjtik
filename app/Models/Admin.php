@@ -31,9 +31,9 @@ class Admin extends Authenticatable
         'remember_token',
     ];
 
-    // 5. CASTING (Opsional, biar tanggal otomatis jadi objek Carbon)
+    
     protected $casts = [
         'email_verified_at' => 'datetime',
-        'password' => 'hashed', // Fitur baru Laravel biar otomatis hash (opsional)
+        'password' => 'hashed', 
     ];
 }

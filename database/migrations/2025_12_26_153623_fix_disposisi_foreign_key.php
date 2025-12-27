@@ -15,7 +15,7 @@ return new class extends Migration
         // 1. Hapus FK lama yang salah
         $table->dropForeign(['surat_id']); 
 
-        // 2. Buat FK baru yang benar (ke tabel surats)
+        
         $table->foreign('surat_id')
               ->references('id')
               ->on('surats')

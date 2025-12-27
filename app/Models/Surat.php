@@ -4,7 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Support\Str; // <--- WAJIB: Jangan lupa import ini!
+use Illuminate\Support\Str; 
 use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Surat extends Model
@@ -14,7 +14,7 @@ class Surat extends Model
     protected $table = 'surats';
 
     protected $fillable = [
-        'kode_tiket', // <--- Pastikan kolom ini sudah ada di fillable
+        'kode_tiket', 
         'nama_pengirim',
         'email',
         'perihal_surat',
@@ -23,15 +23,15 @@ class Surat extends Model
         'status'
     ];
 
-    // --- LOGIKA UNIK (AUTO GENERATE KODE) ---
+    
     protected static function boot()
     {
         parent::boot();
 
         static::creating(function ($model) {
-            // Jika kode tiket belum ada, buatkan otomatis
+           
             if (empty($model->kode_tiket)) {
-                // Buat kode acak 6 karakter huruf besar (Contoh: X8Y29A)
+               
                 $model->kode_tiket = strtoupper(Str::random(6));
             }
         });
