@@ -1,98 +1,62 @@
-@extends('layouts.app')
+@extends('layouts.admin')
 
 @section('content')
-<style>
-    body { background-color: #f8f9fa; font-family: 'Segoe UI', sans-serif; }
-    .card-modern { border: none; border-radius: 12px; box-shadow: 0 5px 15px rgba(0,0,0,0.05); }
-    .table-modern thead th { background: #343a40; color: white; border: none; padding: 12px; }
-    .table-modern tbody td { padding: 15px; vertical-align: middle; border-bottom: 1px solid #eee; }
-    .form-control-soft { background: #f8f9fa; border: 1px solid #e9ecef; border-radius: 8px; }
-    .form-control-soft:focus { background: white; box-shadow: 0 0 0 3px rgba(13, 110, 253, 0.1); border-color: #0d6efd; }
-</style>
 
-<div class="container mt-4 pb-5">
-    
-    <div class="d-flex justify-content-between align-items-center mb-5">
-        <div>
-            <h3 class="fw-bold mb-1">Dashboard Admin Prodi <span class="text-primary">{{ $nama_prodi }}</span></h3>
-            <p class="text-muted m-0">Kelola surat masuk untuk program studi Anda.</p>
-        </div>
-        <form action="{{ route('admin.logout') }}" method="POST">
-            @csrf
-            <button type="submit" class="btn btn-danger rounded-pill px-4 fw-bold shadow-sm">
-                <i class="bi bi-box-arrow-right me-1"></i> Logout
-            </button>
-        </form>
-    </div>
-
-    <div class="row justify-content-center mb-4">
-        <div class="col-md-8">
-            <div class="card card-modern p-2">
-                <form action="{{ route('admin.prodi.index') }}" method="GET">
-                    <div class="input-group">
-                        <span class="input-group-text bg-white border-0 ps-3"><i class="bi bi-search text-muted"></i></span>
-                        <input type="text" name="cari" class="form-control border-0" 
-                               placeholder="Cari Pengirim, Perihal, atau Kode Tiket..." 
-                               value="{{ request('cari') }}">
-                        <button class="btn btn-primary rounded-pill px-4" type="submit">Cari</button>
-                        @if(request('cari'))
-                            <a href="{{ route('admin.prodi.index') }}" class="btn btn-light rounded-pill ms-2" title="Reset"><i class="bi bi-x-lg"></i></a>
-                        @endif
-                    </div>
-                </form>
-            </div>
+    <div class="card border-0 shadow-sm rounded-4 mb-4">
+        <div class="card-body p-3">
+            <form action="{{ route('admin.prodi.index') }}" method="GET">
+                <div class="input-group">
+                    <span class="input-group-text bg-white border-0"><i class="bi bi-search text-muted"></i></span>
+                    <input type="text" name="cari" class="form-control border-0" placeholder="Cari Pengirim, Perihal, atau Kode Tiket..." value="{{ request('cari') }}">
+                    <button class="btn btn-primary px-4 rounded-3" type="submit">Cari</button>
+                    @if(request('cari')) <a href="{{ route('admin.prodi.index') }}" class="btn btn-light ms-2"><i class="bi bi-x-lg"></i></a> @endif
+                </div>
+            </form>
         </div>
     </div>
 
-    @if(session('error'))
-        <div class="alert alert-danger shadow-sm rounded-3 border-0">{{ session('error') }}</div>
-    @endif
-
-    <div class="card card-modern mb-5">
-        <div class="card-header bg-white border-bottom p-4">
-            <h5 class="fw-bold text-primary m-0"><i class="bi bi-inbox-fill me-2"></i> Surat Masuk (Perlu Tindakan)</h5>
+    <div class="card border-0 shadow-sm rounded-4 mb-4">
+        <div class="card-header bg-white p-4 border-bottom-0">
+            <h5 class="fw-bold m-0 text-primary"><i class="bi bi-inbox-fill me-2"></i> Surat Masuk (Perlu Tindakan)</h5>
         </div>
         <div class="table-responsive">
-            <table class="table table-modern mb-0">
-                <thead>
+            <table class="table align-middle table-hover mb-0">
+                <thead class="bg-light">
                     <tr>
-                        <th width="20%">Pengirim</th>
-                        <th width="25%">Perihal</th>
-                        <th width="15%">File & Tgl</th>
-                        <th width="40%">Aksi & Catatan</th>
+                        <th class="ps-4">Pengirim</th>
+                        <th>Perihal</th>
+                        <th>Info File</th>
+                        <th class="pe-4" width="35%">Aksi & Catatan</th>
                     </tr>
                 </thead>
                 <tbody>
                     @forelse($surat_baru as $item)
                         @if($item->surat)
                         <tr>
-                            <td>
+                            <td class="ps-4">
                                 <div class="fw-bold text-dark">{{ $item->surat->nama_pengirim ?? '-' }}</div>
+                                <div class="small text-muted">{{ $item->surat->email ?? '' }}</div>
                             </td>
                             <td>{{ $item->surat->perihal_surat ?? '-' }}</td>
                             <td>
-                                <div class="d-flex flex-column gap-2">
-                                    <span class="text-muted small"><i class="bi bi-calendar"></i> {{ $item->updated_at->format('d/m/Y') }}</span>
-                                    @if($item->surat->file_surat)
-                                        <a href="{{ asset('storage/'.$item->surat->file_surat) }}" target="_blank" class="btn btn-sm btn-info text-white rounded-pill px-3">
-                                            <i class="bi bi-file-pdf"></i> Lihat PDF
-                                        </a>
-                                    @else <span class="text-muted small">-</span> @endif
-                                </div>
+                                <div class="small text-muted mb-1">{{ $item->updated_at->format('d/m/Y') }}</div>
+                                @if($item->surat->file_surat)
+                                    <a href="{{ asset('storage/'.$item->surat->file_surat) }}" target="_blank" class="btn btn-sm btn-info text-white rounded-pill px-3 py-0" style="font-size: 11px;">
+                                        <i class="bi bi-file-earmark-pdf"></i> PDF
+                                    </a>
+                                @endif
                             </td>
-                            <td>
+                            <td class="pe-4">
                                 <div class="bg-light p-3 rounded-3 border">
                                     <form id="form-surat-{{ $item->id }}" action="{{ route('prodi.surat.update', $item->id) }}" method="POST">
                                         @csrf
-                                        <label class="small text-muted fw-bold mb-1">Instruksi / Catatan:</label>
-                                        <textarea name="catatan" class="form-control form-control-soft form-control-sm mb-2" rows="2" placeholder="Tulis instruksi tindak lanjut..."></textarea>
-                                        
+                                        <textarea name="catatan" class="form-control form-control-sm mb-2" rows="2" placeholder="Tulis instruksi/catatan..."></textarea>
                                         <div class="d-flex gap-2">
-                                            <button type="submit" name="aksi" value="disposisi" class="btn btn-warning btn-sm flex-grow-1 rounded-pill fw-bold text-dark">
+                                            <button type="submit" name="aksi" value="disposisi" class="btn btn-warning btn-sm flex-grow-1 fw-bold text-dark rounded-pill">
                                                 ⚠️ Disposisi
                                             </button>
-                                            <button type="button" onclick="konfirmasiArsip('{{ $item->id }}')" class="btn btn-success btn-sm flex-grow-1 rounded-pill fw-bold">
-                                                ✅ Arsip (Selesai)
+                                            <button type="button" onclick="konfirmasiArsip('{{ $item->id }}')" class="btn btn-success btn-sm flex-grow-1 fw-bold rounded-pill">
+                                                ✅ Arsip
                                             </button>
                                         </div>
                                     </form>
@@ -103,8 +67,8 @@
                     @empty
                     <tr>
                         <td colspan="4" class="text-center py-5">
-                            <i class="bi bi-check-circle-fill text-success fs-1 mb-3"></i>
-                            <h6 class="text-muted">Tidak ada surat pending. Pekerjaan Anda selesai!</h6>
+                            <i class="bi bi-check2-circle fs-1 text-success d-block mb-2"></i>
+                            <span class="text-muted">Tidak ada surat pending.</span>
                         </td>
                     </tr>
                     @endforelse
@@ -113,94 +77,81 @@
         </div>
     </div>
 
-    <div class="card card-modern bg-white">
-        <div class="card-header bg-light border-bottom p-4">
-            <h5 class="fw-bold text-secondary m-0"><i class="bi bi-clock-history me-2"></i> Riwayat Surat (Sudah Diproses)</h5>
+    <div class="card border-0 shadow-sm rounded-4">
+        <div class="card-header bg-white p-4 border-bottom-0">
+            <h5 class="fw-bold m-0 text-secondary"><i class="bi bi-clock-history me-2"></i> Riwayat Surat</h5>
         </div>
         <div class="table-responsive">
-            <table class="table table-bordered mb-0">
-                <thead class="table-light">
+            <table class="table align-middle table-hover mb-0">
+                <thead class="bg-light">
                     <tr>
-                        <th>Pengirim</th>
+                        <th class="ps-4">Pengirim</th>
                         <th>Perihal</th>
-                        <th>Status Akhir</th>
-                        <th>Catatan Anda</th>
-                        <th width="15%">Cetak</th>
+                        <th>Status Saat Ini</th>
+                        <th>Catatan</th>
+                        <th class="pe-4 text-end">Opsi</th>
                     </tr>
                 </thead>
                 <tbody>
                     @forelse($surat_selesai as $item)
                         @if($item->surat)
                         <tr>
-                            <td>{{ $item->surat->nama_pengirim ?? '-' }}</td>
+                            <td class="ps-4">{{ $item->surat->nama_pengirim ?? '-' }}</td>
                             <td>{{ $item->surat->perihal_surat ?? '-' }}</td>
-                            <td class="text-center">
+                            <td>
                                 @if($item->status == 'arsip')
                                     <span class="badge bg-success rounded-pill px-3">✅ ARSIP (SELESAI)</span>
                                 @else
-                                    <div class="d-flex flex-column align-items-center gap-2">
-                                        <span class="badge bg-warning text-dark rounded-pill px-3">⚠️ SEDANG PROSES</span>
-                                        <form action="{{ route('prodi.surat.update', $item->id) }}" method="POST">
-                                            @csrf
-                                            <input type="hidden" name="aksi" value="arsip">
-                                            <input type="hidden" name="catatan" value="{{ $item->catatan }}">
-                                            <button type="submit" class="btn btn-outline-success btn-sm rounded-pill" style="font-size: 0.75rem;">
-                                                <i class="bi bi-check-circle-fill me-1"></i> Tandai Selesai
-                                            </button>
-                                        </form>
-                                    </div>
+                                    <form action="{{ route('prodi.surat.update', $item->id) }}" method="POST" class="d-inline">
+                                        @csrf
+                                        <input type="hidden" name="aksi" value="arsip">
+                                        <input type="hidden" name="catatan" value="{{ $item->catatan }}">
+                                        
+                                        <button type="submit" class="btn badge bg-warning text-dark border-0 rounded-pill px-3" title="Klik untuk tandai selesai">
+                                            ⚠️ SEDANG PROSES <i class="bi bi-arrow-right ms-1"></i> ✅
+                                        </button>
+                                    </form>
                                 @endif
                             </td>
                             <td>
                                 @if($item->catatan)
-                                    <div class="bg-light p-2 rounded small text-muted fst-italic border">"{{ $item->catatan }}"</div>
-                                @else - @endif
+                                    <small class="d-block text-muted fst-italic bg-light p-1 rounded border">"{{ $item->catatan }}"</small>
+                                @else 
+                                    - 
+                                @endif
                             </td>
-                            <td>
-                                <a href="{{ route('prodi.surat.cetak', $item->id) }}" target="_blank" class="btn btn-dark btn-sm w-100 rounded-pill">
-                                    <i class="bi bi-printer me-1"></i> Cetak
+                            <td class="pe-4 text-end">
+                                <a href="{{ route('prodi.surat.cetak', $item->id) }}" target="_blank" class="btn btn-dark btn-sm rounded-circle shadow-sm" title="Cetak Lembar Disposisi">
+                                    <i class="bi bi-printer"></i>
                                 </a>
                             </td>
                         </tr>
                         @endif
                     @empty
-                    <tr><td colspan="5" class="text-center text-muted py-4">Belum ada riwayat surat.</td></tr>
+                    <tr><td colspan="5" class="text-center py-4 text-muted">Belum ada riwayat surat.</td></tr>
                     @endforelse
                 </tbody>
             </table>
         </div>
     </div>
 
-</div>
+@endsection
 
-<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+@push('scripts')
 <script>
-    @if(session('success'))
-        Swal.fire({
-            icon: 'success',
-            title: 'Berhasil!',
-            text: "{!! session('success') !!}",
-            showConfirmButton: false,
-            timer: 2000,
-            confirmButtonColor: '#0d6efd'
-        });
-    @endif
-    @if(session('error'))
-        Swal.fire({ icon: 'error', title: 'Gagal!', text: "{{ session('error') }}" });
-    @endif
-
+    // Konfirmasi Arsip via SweetAlert
     function konfirmasiArsip(id) {
         Swal.fire({
-            title: 'Yakin mau Arsip?',
-            text: "Surat akan ditandai selesai dan dipindahkan ke riwayat.",
+            title: 'Arsipkan Surat?',
+            text: "Surat akan ditandai selesai (Arsip).",
             icon: 'question',
             showCancelButton: true,
             confirmButtonColor: '#198754',
-            cancelButtonColor: '#6c757d',
-            confirmButtonText: 'Ya, Arsipkan!',
+            confirmButtonText: 'Ya, Arsip!',
             cancelButtonText: 'Batal'
         }).then((result) => {
             if (result.isConfirmed) {
+                // Manipulasi form untuk submit 'arsip'
                 let form = document.getElementById('form-surat-' + id);
                 let input = document.createElement('input');
                 input.type = 'hidden';
@@ -212,5 +163,4 @@
         })
     }
 </script>
-
-@endsection
+@endpush
